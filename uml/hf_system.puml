@@ -1,0 +1,51 @@
+@startuml
+title 浩方服务系统
+[HfGateSvr] as roomgate
+[HfGateWay] as gw
+:HfUser: as hfuser
+
+(HfRoomSvr) as room
+(HfAuthSvr2) as hfauth2
+(HfBroSvr) as hfbro
+(DuoTeamSvr) as duo
+(TicketSvr) as ticket
+(GrpcProxy) as proxy
+[PHP Api] as php
+(Redis Pub/Sub) as ps
+(Redis/Db) as store
+
+package "DuoDuoGame" {
+(Game-Start) as gamestart
+(Gate-End) as gameend
+}
+
+hfuser <-> roomgate: 房间服务
+roomgate <-> room
+
+hfuser <--> gw: 连接浩方通用网关
+proxy -> ticket: 代理转换
+gw <- hfbro: 广播处理
+gw <-> hfauth2: 用户登录
+hfauth2 ..> ps: 发布消息
+ticket ..> ps: 发布消息
+gw <-> duo: 转发协议
+duo <-> ticket: 获取票务信息
+duo <.. ps: 订阅消息
+duo --> hfbro: 广播消息
+ticket <..> store: 读写数据
+duo <..> store: 读写数据
+
+
+php ..> proxy: 通知游戏结果
+proxy -> duo:代理转换
+duo ..> php: 启动游戏
+php ...> gamestart: 启动游戏
+gameend ...> php: 结束游戏
+
+note right of ticket
+可处理多种货币
+end note
+
+
+
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+title 浩方IM系统
+
+[HfImGateSvr] as imgate
+:HfImUser: as imuser
+(HfImSvr) as im
+(HfImBroSvr) as hfimbro
+(HfAuthSvr1) as hfauth1
+
+imuser <-> imgate: im通道
+imgate <-> hfauth1
+imgate <-> im
+imgate <- hfimbro
+im --> hfimbro
+@enduml
